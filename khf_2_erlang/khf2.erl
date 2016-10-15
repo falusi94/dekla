@@ -13,20 +13,24 @@
 %%   koordinátájú mezőjében megengedett értékek listája.
 
 ertekek({K, LIST}, {ROW,COL}) ->
-%    RET = getItem(LIST, ROW, COL),
-%    io:format("RET: ~p \n", [RET]),
-%    io:format("List: ~p \n", [createFullList(5)]),
-%    io:format("diff: ~p \n", [removeElements(createFullList(5), [2,3])]),
-%    io:format("tuple: ~p \n", [createTuple([o])]),
-%    io:format("original: ~p \n", [LIST]),
-%    io:format("normalized: ~p \n", [normalizeInputList({K, LIST})]),
-%    io:format("examineRow: ~p \n", [examineRow({K, normalizeInputList({K, LIST})}, {ROW,COL})]),
     NORMALIZED = normalizeInputList({K, LIST}),
     ROWRESTRICTION = examineRow({K, NORMALIZED}, {ROW,COL}),
     COLRESTRICTION = examineCol({K, NORMALIZED}, {ROW,COL}),
     RESTRICTED = lists:append(ROWRESTRICTION, COLRESTRICTION),
-    removeElements( createFullList(K*K), RESTRICTED)
-    .
+    CANDIDATES = removeElements( createFullList(K*K), RESTRICTED),
+    [NUM,_,_] = getItem(NORMALIZED, ROW, COL),
+    ISMEMBER = lists:member(NUM, CANDIDATES),
+    if
+        NUM>0 ->
+            if
+                ISMEMBER ->
+                    [NUM];
+                true ->
+                    []
+            end;
+        true ->
+            CANDIDATES
+    end.
 
 % Return the values that cant be in the given field because of the row
 examineRow({K, NORMALIZED}, {ROW,COL}) ->
