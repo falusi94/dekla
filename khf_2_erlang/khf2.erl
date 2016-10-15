@@ -12,6 +12,15 @@
 %%   Vals az SSpec specifikációval megadott Sudoku-feladvány R_C
 %%   koordinátájú mezőjében megengedett értékek listája.
 
+ertekek({1, LIST}, {ROW,COL}) ->
+    NORMALIZED = normalizeInputList({1, LIST}),
+    [NUM,PAR,_] = getItem(NORMALIZED, ROW, COL),
+    if
+        NUM=:=1 orelse NUM=:=-1 andalso PAR=:=u orelse PAR=:=o ->
+            [1];
+        true ->
+            []
+    end;
 ertekek({K, LIST}, {ROW,COL}) ->
     NORMALIZED = normalizeInputList({K, LIST}),
     ROWRESTRICTION = examineRow({K, NORMALIZED}, {ROW,COL}),
@@ -97,7 +106,7 @@ createOddList(MAX) ->
     createList(MAX, 1, []).
 createList(MAX, INDEX, LIST) ->
     if
-        INDEX<MAX ->
+        INDEX<MAX orelse INDEX=:=MAX ->
             createList(MAX, INDEX+2, lists:append(LIST, [INDEX]));
         true ->
             LIST
