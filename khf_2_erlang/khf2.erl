@@ -18,11 +18,9 @@ ertekek({K, L}, {R,C}) ->
     [].
 
 getItem([H|T], RI, CI, R, C) ->
-    io:format("R: ~p  C: ~p  H: ~p\n", [RI, CI,H]),
     ELEMENT_LIST = isElementList(H),
     if
         is_list(H) andalso ELEMENT_LIST ->
-            io:format("is_list(H) andalso ELEMENT_LIST\n", []),
             if
                 RI<R ->
                     getItem(T, RI+1, CI, R, C);
@@ -30,7 +28,6 @@ getItem([H|T], RI, CI, R, C) ->
                     getItem(H, RI, CI, R, C)
             end;
         is_list(H) andalso not ELEMENT_LIST ->
-            io:format("is_list(H) andalso not ELEMENT_LIST\n", []),
             if
                 CI<C ->
                     getItem(T, RI, CI+1, R, C);
@@ -38,7 +35,6 @@ getItem([H|T], RI, CI, R, C) ->
                     getItem(H, RI, CI, R, C)
             end;
         true ->
-            io:format("RET\n", []),
             [H|T]
     end;
 getItem([], _, _, _, _) ->
