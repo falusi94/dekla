@@ -13,14 +13,91 @@
 %%   koordinátájú mezőjében megengedett értékek listája.
 
 ertekek({K, LIST}, {ROW,COL}) ->
-    RET = getItem(LIST, ROW, COL),
-    io:format("RET: ~p \n", [RET]),
-    io:format("List: ~p \n", [createFullList(5)]),
-    io:format("diff: ~p \n", [removeElements(createFullList(5), [2,3])]),
-    io:format("tuple: ~p \n", [createTuple([o])]),
-    io:format("original: ~p \n", [LIST]),
-    io:format("normalized: ~p \n", [normalizeInputList({K, LIST})]),
-    [].
+%    RET = getItem(LIST, ROW, COL),
+%    io:format("RET: ~p \n", [RET]),
+%    io:format("List: ~p \n", [createFullList(5)]),
+%    io:format("diff: ~p \n", [removeElements(createFullList(5), [2,3])]),
+%    io:format("tuple: ~p \n", [createTuple([o])]),
+%    io:format("original: ~p \n", [LIST]),
+%    io:format("normalized: ~p \n", [normalizeInputList({K, LIST})]),
+%    io:format("examineRow: ~p \n", [examineRow({K, normalizeInputList({K, LIST})}, {ROW,COL})]),
+    NORMALIZED = normalizeInputList({K, LIST}),
+    ROWRESTRICTION = examineRow({K, NORMALIZED}, {ROW,COL}),
+    COLRESTRICTION = examineCol({K, NORMALIZED}, {ROW,COL}),
+    RESTRICTED = lists:append(ROWRESTRICTION, COLRESTRICTION),
+    removeElements( createFullList(K*K), RESTRICTED)
+    .
+
+% Return the values that cant be in the given field because of the row
+examineRow({K, NORMALIZED}, {ROW,COL}) ->
+    examineRow(K*K, NORMALIZED, ROW, COL, 1, []).
+examineRow(MAX, NORMALIZED, ROW, COL, INDEX, RET) ->
+    if
+        INDEX=:=COL ->
+            [_,PAR,_] = getItem(NORMALIZED, ROW, INDEX),
+            if
+                PAR=:=o ->
+                    RET1 = lists:append(RET, createEvenList(MAX));
+                PAR=:=e ->
+                    RET1 = lists:append(RET, createOddList(MAX));
+                true ->
+                    RET1 = RET
+            end,
+            examineRow(MAX, NORMALIZED, ROW, COL, INDEX+1, RET1);
+        (INDEX<MAX orelse INDEX=:=MAX) ->
+            [NUM,_,_] = getItem(NORMALIZED, ROW, INDEX),
+            if
+                NUM>0 ->
+                    RET1 = lists:append(RET, [NUM]);
+                true ->
+                    RET1 = RET
+            end,
+            examineRow(MAX, NORMALIZED, ROW, COL, INDEX+1, RET1);
+        true ->
+            RET
+    end.
+
+% Return the values that cant be in the given field because of the col
+examineCol({K, NORMALIZED}, {ROW,COL}) ->
+    examineCol(K*K, NORMALIZED, ROW, COL, 1, []).
+examineCol(MAX, NORMALIZED, ROW, COL, INDEX, RET) ->
+    if
+        INDEX=:=ROW ->
+            [_,PAR,_] = getItem(NORMALIZED, INDEX, COL),
+            if
+                PAR=:=o ->
+                    RET1 = lists:append(RET, createEvenList(MAX));
+                PAR=:=e ->
+                    RET1 = lists:append(RET, createOddList(MAX));
+                true ->
+                    RET1 = RET
+            end,
+            examineCol(MAX, NORMALIZED, ROW, COL, INDEX+1, RET1);
+        (INDEX<MAX orelse INDEX=:=MAX) ->
+            [NUM,_,_] = getItem(NORMALIZED, INDEX, COL),
+            if
+                NUM>0 ->
+                    RET1 = lists:append(RET, [NUM]);
+                true ->
+                    RET1 = RET
+            end,
+            examineCol(MAX, NORMALIZED, ROW, COL, INDEX+1, RET1);
+        true ->
+            RET
+    end.
+
+% Create a list from 1 to K with even or odd numbers
+createEvenList(MAX) ->
+    createList(MAX, 2, []).
+createOddList(MAX) ->
+    createList(MAX, 1, []).
+createList(MAX, INDEX, LIST) ->
+    if
+        INDEX<MAX ->
+            createList(MAX, INDEX+2, lists:append(LIST, [INDEX]));
+        true ->
+            LIST
+    end.
 
 % Change items to tuples {num, even/odd, south/west}
 normalizeInputList({K, LIST}) ->
@@ -41,7 +118,7 @@ createTuple(ITEM) ->
     PARITY = evenOrOdd(ITEM),
     DIRECTION = southOrWest(ITEM),
     NUMBER = number(ITEM),
-    {NUMBER, PARITY, DIRECTION}.
+    [NUMBER, PARITY, DIRECTION].
 
 % Gives back the number if exists in item, else -1
 number([HEAD]) ->
@@ -94,12 +171,12 @@ removeElements(LIST, [HEAD|TAIL]) ->
     removeElements(lists:delete(HEAD, LIST), TAIL).
 
 % Create list with every possible values
-createFullList(K) ->
-    createFullList(K, [], 1).
-createFullList(K, LIST, INDEX) ->
+createFullList(MAX) ->
+    createFullList(MAX, [], 1).
+createFullList(MAX, LIST, INDEX) ->
     if
-        INDEX<K orelse INDEX=:=K ->
-            createFullList(K, lists:append(LIST, [INDEX]), INDEX+1);
+        INDEX<MAX orelse INDEX=:=MAX ->
+            createFullList(MAX, lists:append(LIST, [INDEX]), INDEX+1);
         true ->
             LIST
     end.
