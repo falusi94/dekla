@@ -12,52 +12,59 @@
 %%   Vals az SSpec specifikációval megadott Sudoku-feladvány R_C
 %%   koordinátájú mezőjében megengedett értékek listája.
 
-ertekek({K, L}, {R,C}) ->
-    RET = getItem(L,R,C),
+ertekek({K, LIST}, {ROW,COL}) ->
+    RET = getItem(LIST,ROW,COL),
     io:format("RET: ~p \n", [RET]),
-    io:format("List: ~p \n", [createRetList(5)]),
+    io:format("List: ~p \n", [createFullList(5)]),
+    io:format("diff: ~p \n", [removeElements(createFullList(5), [2])]),
     [].
 
+% Remove not valid elements from list
+removeElements(LIST, [HEAD]) ->
+    lists:delete(HEAD, LIST);
+removeElements(LIST, [HEAD|TAIL]) ->
+    removeElements(lists:delete(HEAD, LIST), TAIL).
+
 % Create list with every possible values
-createRetList(K) ->
-    createRetList(K, [], 1).
-createRetList(K, L, I) ->
+createFullList(K) ->
+    createFullList(K, [], 1).
+createFullList(K, LIST, INDEX) ->
     if
-        I<K orelse I=:=K ->
-            createRetList(K, lists:append(L, [I]), I+1);
+        INDEX<K orelse INDEX=:=K ->
+            createFullList(K, lists:append(LIST, [INDEX]), INDEX+1);
         true ->
-            L
+            LIST
     end.
 
 % Return an item from given matrix structure
-getItem([H|T], RI, CI, R, C) ->
-    ELEMENT_LIST = isElementList(H),
+getItem([HEAD|TAIL], ROWI, COLI, ROW, COL) ->
+    ELEMENT_LIST = isElementList(HEAD),
     if
-        is_list(H) andalso ELEMENT_LIST ->
+        is_list(HEAD) andalso ELEMENT_LIST ->
             if
-                RI<R ->
-                    getItem(T, RI+1, CI, R, C);
-                RI=:=R ->
-                    getItem(H, RI, CI, R, C)
+                ROWI<ROW ->
+                    getItem(TAIL, ROWI+1, COLI, ROW, COL);
+                ROWI=:=ROW ->
+                    getItem(HEAD, ROWI, COLI, ROW, COL)
             end;
-        is_list(H) andalso not ELEMENT_LIST ->
+        is_list(HEAD) andalso not ELEMENT_LIST ->
             if
-                CI<C ->
-                    getItem(T, RI, CI+1, R, C);
-                CI=:=C ->
-                    getItem(H, RI, CI, R, C)
+                COLI<COL ->
+                    getItem(TAIL, ROWI, COLI+1, ROW, COL);
+                COLI=:=COL ->
+                    getItem(HEAD, ROWI, COLI, ROW, COL)
             end;
         true ->
-            [H|T]
+            [HEAD|TAIL]
     end;
 getItem([], _, _, _, _) ->
     [].
-getItem([H|T], R, C) ->
-    getItem([H|T], 1, 1, R, C).
+getItem([HEAD|TAIL], ROW, COL) ->
+    getItem([HEAD|TAIL], 1, 1, ROW, COL).
 
 % Returns true if the first element is a list of the input list,
 % every other case returns false
-isElementList([H|_]) ->
-    is_list(H);
+isElementList([HEAD|_]) ->
+    is_list(HEAD);
 isElementList(_) ->
     false.
