@@ -25,7 +25,8 @@ ertekek({K, LIST}, {ROW,COL}) ->
     NORMALIZED = normalizeInputList({K, LIST}),
     ROWRESTRICTION = examineRow({K, NORMALIZED}, {ROW,COL}),
     COLRESTRICTION = examineCol({K, NORMALIZED}, {ROW,COL}),
-    RESTRICTED = lists:append(ROWRESTRICTION, COLRESTRICTION),
+    SQUARERESTRICTION = examineSquare({K, NORMALIZED}, {ROW,COL}),
+    RESTRICTED = lists:append(lists:append(ROWRESTRICTION, COLRESTRICTION), SQUARERESTRICTION),
     CANDIDATES = removeElements( createFullList(K*K), RESTRICTED),
     [NUM,_,_] = getItem(NORMALIZED, ROW, COL),
     ISMEMBER = lists:member(NUM, CANDIDATES),
@@ -40,6 +41,43 @@ ertekek({K, LIST}, {ROW,COL}) ->
         true ->
             CANDIDATES
     end.
+
+examineSquare({K, NORMALIZED}, {ROW,COL}) ->
+    SQUARES = cutIntoArrays(NORMALIZED, K),
+    INDEX = ((ROW-1) div K)*K + (COL-1) div K + 1,
+    SQUARE = getSquare(SQUARES, INDEX),
+    RET = examineSquare(SQUARE, ROW, COL, ((ROW-1) div K)*K+1, ((COL-1) div K)*K+1, [], K),
+    io:format("SQUARES: ~p \n INDEX: ~p SQUARE: ~p\n RET: ~p\n", [SQUARES, INDEX, SQUARE, RET]),
+    RET.
+examineSquare([[NUM,_,_]], ROW, COL, ROWI, COLI, RET, K) ->
+    io:format("NUM: ~p ROWI: ~p COLI: ~p RET: ~p ROW: ~p COL: ~p\n", [NUM,  ROWI, COLI, RET, ROW, COL]),
+    if
+        ROW=:=ROWI andalso COL=:=COLI ->
+            RET;
+        true ->
+            lists:append(RET, [NUM])
+    end;
+examineSquare([[NUM,_,_]|TAIL], ROW, COL, ROWI, COLI, RET, K) ->
+    io:format("NUM: ~p ROWI: ~p COLI: ~p RET: ~p ROW: ~p COL: ~p\n", [NUM,  ROWI, COLI, RET, ROW, COL]),
+    if
+        (COLI+2) div K =:= (COL+1) div K->
+            COLI1 = COLI+1,
+            ROWI1 = ROWI;
+        true ->
+            COLI1 = COLI-K+1,
+            ROWI1 = ROWI+1
+    end,
+    if
+        ROW=:=ROWI andalso COL=:=COLI ->
+            examineSquare(TAIL, ROW, COL, ROWI1, COLI1, RET, K);
+        true ->
+            examineSquare(TAIL, ROW, COL, ROWI1, COLI1, lists:append(RET, [NUM]), K)
+    end.
+
+getSquare([HEAD|_], 1) ->
+    HEAD;
+getSquare([_|TAIL], INDEX) ->
+    getSquare(TAIL, INDEX-1).
 
 % Return the values that cant be in the given field because of the row
 examineRow({K, NORMALIZED}, {ROW,COL}) ->
@@ -178,6 +216,8 @@ evenOrOdd(ITEM) ->
     end.
 
 % Remove not valid elements from list
+removeElements(LIST, [] ) ->
+    LIST;
 removeElements(LIST, [HEAD]) ->
     lists:delete(HEAD, LIST);
 removeElements(LIST, [HEAD|TAIL]) ->
@@ -226,3 +266,49 @@ isElementList([HEAD|_]) ->
     is_list(HEAD);
 isElementList(_) ->
     false.
+
+% Create
+cutIntoArrays(LIST, K) ->
+    cutIntoArrays(LIST, K, K, 1, 1, 1, 1, K*K, K*K, 1, [], []).
+cutIntoArrays(L, R, C, RI, CI, J, K, CMAX, RMAX, ASD, LIST, RET) ->
+    NEW = (mod(ASD,R*C) =:= 0) or
+            ( ((CI =:= CMAX) and (mod(RI,R) =:= 0)) or ((RI =:= RMAX) and (mod(CI,C) =:= 0)))
+            or (RI*CI=:=RMAX*CMAX),
+    if
+        NEW ->
+            ELEMENT = getItem( L, RI, CI),
+            LIST1 = [],
+            ASD1=0,
+            RET1 = lists:append( RET, [lists:append(LIST, [ELEMENT])]);
+        true ->
+            RET1 = RET,
+            ASD1=ASD,
+            ELEMENT = getItem( L, RI, CI),
+            LIST1 = lists:append(LIST, [ELEMENT])
+    end,
+    if
+        CI=:=CMAX ->
+            if
+                RI=:=RMAX ->
+                    RET1;
+                RI=:=(K*R) ->
+                    cutIntoArrays(L, R, C, RI+1, 1, 1, K+1, CMAX, RMAX, ASD1+1, LIST1, RET1);
+                true ->
+                     cutIntoArrays(L, R, C, RI+1, (J-1)*C+1, J, K, CMAX, RMAX, ASD1+1, LIST1, RET1)
+             end;
+        CI=:=(J*C) ->
+            if
+                RI=:=RMAX ->
+                    cutIntoArrays(L, R, C, (K-1)*R+1, CI+1, J+1, K, CMAX, RMAX, ASD1+1, LIST1, RET1);
+                RI=:=(K*R) ->
+                    cutIntoArrays(L, R, C, (K-1)*R+1, CI+1, J+1, K, CMAX, RMAX, ASD1+1, LIST1, RET1);
+                true ->
+                    cutIntoArrays(L, R, C, RI+1, (J-1)*C+1, J, K, CMAX, RMAX, ASD1+1, LIST1, RET1)
+            end;
+         true ->
+             cutIntoArrays(L, R, C, RI, CI+1, J, K, CMAX, RMAX, ASD1+1, LIST1, RET1)
+    end.
+
+mod(X,Y) when X > 0 -> X rem Y;
+mod(X,Y) when X < 0 -> Y + X rem Y;
+mod(0,_) -> 0.
