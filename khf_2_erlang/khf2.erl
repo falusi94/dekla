@@ -1,6 +1,6 @@
 -module(khf2).
 -author('falusi.david94@gmail.com').
--vsn('$LastChangedDate: 2016-10-15 14:30:51 +0200 (Sat, 15 Oct 2016) $$').
+-vsn('$LastChangedDate: 2016-10-15 22:10:00 +0200 (Sat, 15 Oct 2016) $$').
 -export([ertekek/2]).
 
 %% @type col() = integer().
@@ -11,7 +11,6 @@
 %%   fenti Prolog specifikációban felsorolt (a), (b) és (c) feltételeket, ahol
 %%   Vals az SSpec specifikációval megadott Sudoku-feladvány R_C
 %%   koordinátájú mezőjében megengedett értékek listája.
-
 ertekek({1, LIST}, {ROW,COL}) ->
     NORMALIZED = normalizeInputList({1, LIST}),
     [NUM,PAR,_] = getItem(NORMALIZED, ROW, COL),
@@ -42,15 +41,13 @@ ertekek({K, LIST}, {ROW,COL}) ->
             CANDIDATES
     end.
 
+% Check the values in the square if there any matches
 examineSquare({K, NORMALIZED}, {ROW,COL}) ->
     SQUARES = cutIntoArrays(NORMALIZED, K),
     INDEX = ((ROW-1) div K)*K + (COL-1) div K + 1,
     SQUARE = getSquare(SQUARES, INDEX),
-    RET = examineSquare(SQUARE, ROW, COL, ((ROW-1) div K)*K+1, ((COL-1) div K)*K+1, [], K),
-    io:format("SQUARES: ~p \n INDEX: ~p SQUARE: ~p\n RET: ~p\n", [SQUARES, INDEX, SQUARE, RET]),
-    RET.
+    examineSquare(SQUARE, ROW, COL, ((ROW-1) div K)*K+1, ((COL-1) div K)*K+1, [], K).
 examineSquare([[NUM,_,_]], ROW, COL, ROWI, COLI, RET, K) ->
-    io:format("NUM: ~p ROWI: ~p COLI: ~p RET: ~p ROW: ~p COL: ~p\n", [NUM,  ROWI, COLI, RET, ROW, COL]),
     if
         ROW=:=ROWI andalso COL=:=COLI ->
             RET;
@@ -58,7 +55,6 @@ examineSquare([[NUM,_,_]], ROW, COL, ROWI, COLI, RET, K) ->
             lists:append(RET, [NUM])
     end;
 examineSquare([[NUM,_,_]|TAIL], ROW, COL, ROWI, COLI, RET, K) ->
-    io:format("NUM: ~p ROWI: ~p COLI: ~p RET: ~p ROW: ~p COL: ~p\n", [NUM,  ROWI, COLI, RET, ROW, COL]),
     if
         (COLI+2) div K =:= (COL+1) div K->
             COLI1 = COLI+1,
@@ -74,6 +70,7 @@ examineSquare([[NUM,_,_]|TAIL], ROW, COL, ROWI, COLI, RET, K) ->
             examineSquare(TAIL, ROW, COL, ROWI1, COLI1, lists:append(RET, [NUM]), K)
     end.
 
+% Select the needed square from squares
 getSquare([HEAD|_], 1) ->
     HEAD;
 getSquare([_|TAIL], INDEX) ->
