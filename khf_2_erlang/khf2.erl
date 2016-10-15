@@ -1,6 +1,6 @@
 -module(khf2).
 -author('falusi.david94@gmail.com').
--vsn('2016-09-28').
+-vsn('$LastChangedDate: 2016-10-15 14:30:51 +0200 (Sat, 15 Oct 2016) $$').
 -export([ertekek/2]).
 
 %% @type col() = integer().
@@ -15,8 +15,21 @@
 ertekek({K, L}, {R,C}) ->
     RET = getItem(L,R,C),
     io:format("RET: ~p \n", [RET]),
+    io:format("List: ~p \n", [createRetList(5)]),
     [].
 
+% Create list with every possible values
+createRetList(K) ->
+    createRetList(K, [], 1).
+createRetList(K, L, I) ->
+    if
+        I<K orelse I=:=K ->
+            createRetList(K, lists:append(L, [I]), I+1);
+        true ->
+            L
+    end.
+
+% Return an item from given matrix structure
 getItem([H|T], RI, CI, R, C) ->
     ELEMENT_LIST = isElementList(H),
     if
@@ -42,6 +55,8 @@ getItem([], _, _, _, _) ->
 getItem([H|T], R, C) ->
     getItem([H|T], 1, 1, R, C).
 
+% Returns true if the first element is a list of the input list,
+% every other case returns false
 isElementList([H|_]) ->
     is_list(H);
 isElementList(_) ->
