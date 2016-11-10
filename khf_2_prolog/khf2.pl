@@ -15,8 +15,24 @@
 %    Vals list(int) típusú mezőértéklista, az SSpec feladvány R_C koordinátájú
 %         mezőjében megengedett értékek listája.
 
-%ertekek(MATRIX, R-C, RET) :-
-%    .
+ertekek(s(PARAM,MATRIX), R-C, RET) :-
+    normalizeInput(MATRIX, NORMALIZED),
+    makeArrays(NORMALIZED, PARAM, SQUARES).
+
+% Create list with every/even/odd number, from 1 to MAX
+createFullList(MAX, RET) :-
+    createList(MAX, 1, 1, [], RET).
+createEvenList(MAX, RET) :-
+    createList(MAX, 2, 2, [], RET).
+createOddList(MAX, RET) :-
+    createList(MAX, 1, 2, [], RET).
+createList(MAX, INDEX, STEP, LIST, RET) :-
+    INDEX =< MAX ->
+        append(LIST, [INDEX], TEMP),
+        NEXT is INDEX+STEP,
+        createList(MAX, NEXT, STEP, TEMP, RET);
+    %else
+        RET = LIST.
 
 % Return an item from given matrix structure
 getItem([HEAD|TAIL], ROW, COL, RET) :-
