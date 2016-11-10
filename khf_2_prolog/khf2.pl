@@ -19,15 +19,63 @@ ertekek(s(PARAM,MATRIX), R-C, RET) :-
     PARAM2 is PARAM*PARAM,
     normalizeInput(MATRIX, NORMALIZED),
 
-    createFullList(PARAM2, CANDIDATES).
+    createFullList(PARAM2, CANDIDATES),
 
-%    checkRow(NORMALIZED, R, ROWRESTRICTION),
-%    checkCol(NORMALIZED, C, COLRESTRICTION),
+    checkRow(NORMALIZED, R, C, ROWRESTRICTION),
+    checkCol(NORMALIZED, R, C, COLRESTRICTION),
 %    checkSquare(NORMALIZED, R, C, SQUARERESTRICTION),
 %
-%    removeElements(CANDIDATES, ROWRESTRICTION, TEMP1),
-%    removeElements(TEMP1, COLRESTRICTION, TEMP2),
+    removeElements(CANDIDATES, ROWRESTRICTION, TEMP1),
+    removeElements(TEMP1, COLRESTRICTION, RET).
 %    removeElements(TEMP2, SQUARERESTRICTION, RET).
+
+% Gives back numbers restricted by row
+checkRow(MATRIX, R, C, RESTRICTED) :-
+    getRow(MATRIX, R, ROW),
+    examine(ROW, C, RESTRICTED).
+
+% Gives back numbers restricted by column
+checkCol(MATRIX, R, C, RESTRICTED) :-
+    getCol(MATRIX, C, COL),
+    examine(COL, R, RESTRICTED).
+
+% Returns Rth row
+getRow(MATRIX, R, ROW) :-
+    getElement(MATRIX, R, ROW).
+
+% Returns Cth column
+getCol(MATRIX, C, COL) :-
+    getCol(MATRIX, C, [], COL).
+getCol([ROW|TAIL], C, TEMP, COL) :-
+    getElement(ROW, C, ELEMENT),
+    append(TEMP, [ELEMENT], TEMP1),
+    getCol(TAIL, C, TEMP1, COL).
+getCol([], _, COL, COL).
+
+% Returns the NTH element from list
+getElement([HEAD|TAIL], NTH, RET) :-
+    NTH=:=1 ->
+        RET = HEAD;
+    %else
+        NEXT is NTH-1,
+        getElement(TAIL, NEXT, RET).
+
+% Examine list
+examine(NORMALIZED, NTH, RESTRICTED) :-
+    examine(NORMALIZED, NTH, [], RESTRICTED).
+examine([[NUMBER,_,_,_]|TAIL], NTH, TEMP, RESTRICTED) :-
+    NTH=:=1 ->
+        NEXT is NTH-1,
+        examine(TAIL, NEXT, TEMP, RESTRICTED);
+    %else
+        NUMBER> -1 ->
+            NEXT is NTH-1,
+            append(TEMP, [NUMBER], TEMP1),
+            examine(TAIL, NEXT, TEMP1, RESTRICTED);
+    %else
+        NEXT is NTH-1,
+        examine(TAIL, NEXT, TEMP, RESTRICTED).
+examine([], _, RESTRICTED, RESTRICTED).
 
 % Remove elements from list
 removeElements(LIST, [], LIST).
