@@ -21,6 +21,17 @@ makeRows([HEAD|TAIL], PARAM, INDEX, TEMP, ASD, RET) :-
         INDEX1 is INDEX + 1,
         makeRows(TAIL, PARAM, INDEX1, LIST, ASD, RET).
 makeRows([HEAD], _, _, TEMP, ASD, RET) :-
-    print('asd3'),
     append(TEMP, [HEAD], TEMP1),
     append(ASD, [TEMP1], RET).
+
+% Return an item from given matrix structure
+getItem([HEAD|TAIL], ROW, COL, RET) :-
+    ROW=:=1 ->
+        getItem(HEAD, COL-1, RET);
+    ROW>0 ->
+        getItem(TAIL, ROW-1, COL, RET).
+getItem([HEAD|TAIL], COL, RET) :-
+    COL=:=0 ->
+        RET = HEAD;
+    COL>0 ->
+        getItem(TAIL, COL-1, RET).
