@@ -6,8 +6,8 @@
 % :- pred feldarabolasa(+matrix, +parameter, ?list(list(any))).
 % feldarabolasa(Mx, P, LL): Az LL lista az Mx mátrix P paraméterű feldarabolása.
 
-%feldarabolasa(MATRIX, PARAM, LIST) :-
-%    .
+feldarabolasa(MATRIX, R-C, RET) :-
+    makeArrays(MATRIX, R, C, RET).
 
 makeRows(LIST, PARAM, RET) :-
     makeRows(LIST, PARAM, 1, [], [], RET).
@@ -46,11 +46,12 @@ countElements([_|TAIL], COUNT, INDEX) :-
     NEXT is INDEX+1,
     countElements(TAIL, COUNT, NEXT).
 
-% Create R*C size index matrix
-getIndex(ROW, COL, R, C, RET) :-
+% Create Indexes
+getIndex(ROW, COL, R, C, MATRIX, RET) :-
     TEMP=[],
-    getIndex(ROW, COL, R, C, 0, TEMP, RET).
-getIndex(ROW, COL, R, C, INDEX, TEMP, RET) :-
+    sizeOfMatrix(MATRIX, RMAX, CMAX),
+    getIndex(ROW, COL, R, C, RMAX, CMAX, 0, TEMP, RET).
+getIndex(ROW, COL, R, C, RMAX, CMAX, INDEX, TEMP, RET) :-
     RC is R*C,
     INDEX=:=RC ->
         RET = TEMP,
@@ -60,50 +61,100 @@ getIndex(ROW, COL, R, C, INDEX, TEMP, RET) :-
         ROW1 is ROW+1,
         COLPARAM is COL-C+1,
         INDEX1 is INDEX+1,
-        append(TEMP, [[ROW, COL]], TEMP1),
-        getIndex(ROW1, COLPARAM, R, C, INDEX1, TEMP1, RET);
+        getIndexHelper(ROW, COL, RMAX, CMAX, TEMP, TEMP1),
+        getIndex(ROW1, COLPARAM, R, C, RMAX, CMAX, INDEX1, TEMP1, RET);
     %else
         COL1 is COL+1,
         INDEX1 is INDEX+1,
-        append(TEMP, [[ROW, COL]], TEMP1),
-        getIndex(ROW, COL1, R, C, INDEX1, TEMP1, RET).
+        getIndexHelper(ROW, COL, RMAX, CMAX, TEMP, TEMP1),
+        getIndex(ROW, COL1, R, C, RMAX, CMAX, INDEX1, TEMP1, RET).
+getIndexHelper(ROW, COL, RMAX, CMAX, IN, OUT) :-
+    RMAX<ROW ->
+        OUT = IN;
+    CMAX<COL ->
+        OUT = IN;
+    append(IN, [[ROW, COL]], OUT).
 
 % Create R*C size squares from MATRIX
+%makeArrays(MATRIX, R, C, RET) :-
+%    TEMP=[],
+%    sizeOfMatrix(MATRIX, RMAX, CMAX),
+%    %ROWKMAX is RMAX / R + 1,
+%    makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP, 1, 1, RET).
+%makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP, ROWK, COLK, RET):-
+%    ROWKMAX is RMAX div R + 1,
+%    print(a),
+%    ROWK>ROWKMAX ->
+%        print(a),
+%        RET=TEMP,
+%        true;
+%    (COLK=:=C ->
+%        print(b),
+%        ROWK1 is ROWK+1,
+%        makeArraysHelper(ROWK, COLK, R, C, RMAX, CMAX, MATRIX, TEMP, TEMP1),
+%        makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP1, ROWK1, 1, RET));
+%    %else
+%        COLK1 is COLK+1,
+%        print(c),
+%        makeArraysHelper(ROWK, COLK, R, C, RMAX, CMAX, MATRIX, TEMP, TEMP1),
+%        makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP1, ROWK, COLK1, RET).
+%makeArraysHelper(ROWK, COLK, R, C, RMAX, CMAX, MATRIX, IN, RET) :-
+%    ROWB is 1+(ROWK-1)*R,
+%    COLB is 1+(COLK-1)*C,
+%    getIndex(ROWB, COLB, R, C, MATRIX, INDEXMATRIX),
+%    swapIndexesForElements(INDEXMATRIX, MATRIX, RMAX, CMAX, ELEMENTMATRIX),
+%    append(IN, [ELEMENTMATRIX], RET).
+
+% Create PARAM*PARAM size squares from MATRIX
 makeArrays(MATRIX, R, C, RET) :-
     TEMP=[],
-    sizeOfMatrix(MATRIX, RMAX, CMAX),
-    makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP, 1, 1, RET).
-makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP, ROWK, COLK, RET):-
-    ROWKMAX is RMAX div R,
+    sizeOfMatrix(MATRIX, ROW, COL),
+    COLKMAX is COL div C + 1,
+    ROWKMAX is ROW div R + 1,
+    makeArrays(MATRIX, R, C, TEMP, 1, 1, ROWKMAX, COLKMAX, RET).
+makeArrays(MATRIX, R, C, TEMP, ROWK, COLK, ROWKMAX, COLKMAX, RET):-
     ROWK>ROWKMAX ->
         RET=TEMP,
         true;
-    COLK=:=C ->
+    (COLK=:=COLKMAX ->
         ROWK1 is ROWK+1,
         makeArraysHelper(ROWK, COLK, R, C, MATRIX, TEMP, TEMP1),
-        makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP1, ROWK1, 1, RET);
+        makeArrays(MATRIX, R, C, TEMP1, ROWK1, 1, ROWKMAX, COLKMAX, RET));
     %else
         COLK1 is COLK+1,
         makeArraysHelper(ROWK, COLK, R, C, MATRIX, TEMP, TEMP1),
-        makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP1, ROWK, COLK1, RET).
+        makeArrays(MATRIX, R, C, TEMP1, ROWK, COLK1, ROWKMAX, COLKMAX, RET).
 makeArraysHelper(ROWK, COLK, R, C, MATRIX, IN, RET) :-
     ROWB is 1+(ROWK-1)*R,
     COLB is 1+(COLK-1)*C,
-    getIndex(ROWB, COLB, R, C, INDEXMATRIX),
+    getIndex(ROWB, COLB, R, C, MATRIX, INDEXMATRIX),
     swapIndexesForElements(INDEXMATRIX, MATRIX, ELEMENTMATRIX),
-    append(IN, [ELEMENTMATRIX], RET).
+    notNullAppend(IN, [ELEMENTMATRIX], RET).
 
 % Swap indexes to elements from MATRIX
 swapIndexesForElements(INDEXMATRIX, MATRIX, RET) :-
     TEMP=[],
-    swapIndexesForElements(INDEXMATRIX, MATRIX, TEMP, RET).
-swapIndexesForElements([[ROW,COL]|TAIL], MATRIX, TEMP, RET) :-
-    getItem(MATRIX, ROW, COL, ELEMENT),
-    append(TEMP, [ELEMENT], TEMP1),
-    swapIndexesForElements(TAIL, MATRIX, TEMP1, RET).
-swapIndexesForElements([], _, TEMP, RET) :-
+    sizeOfMatrix(MATRIX, RMAX, CMAX),
+    swapIndexesForElements(INDEXMATRIX, MATRIX, RMAX, CMAX, TEMP, RET).
+swapIndexesForElements([[ROW,COL]|TAIL], MATRIX, RMAX, CMAX, TEMP, RET) :-
+    RMAX>=ROW ->
+        (CMAX>=COL ->
+            getItem(MATRIX, ROW, COL, ELEMENT),
+            notNullAppend(TEMP, [ELEMENT], TEMP1),
+            swapIndexesForElements(TAIL, MATRIX, RMAX, CMAX, TEMP1, RET));
+    %else
+        swapIndexesForElements(TAIL, MATRIX, RMAX, CMAX, TEMP, RET).
+swapIndexesForElements([], _, _, _, TEMP, RET) :-
     RET = TEMP,
     true.
+
+% Append [ELEMENT] to IN if it is not [[]]
+notNullAppend(IN, [ELEMENT], OUT) :-
+    isEmpty(ELEMENT) ->
+        OUT = IN;
+    append(IN, [ELEMENT], OUT).
+
+isEmpty([]).
 
 % Modulo function
 mod(X, Y, RET) :-
