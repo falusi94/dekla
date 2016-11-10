@@ -18,6 +18,25 @@
 %ertekek(MATRIX, R-C, RET) :-
 %    .
 
+% Change items to tuples {num, even/odd, south/west}
+normalizeInput(MATRIX, RET) :-
+    TEMP=[],
+    normalizeRows(MATRIX, TEMP, RET).
+normalizeRows([ROW|TAIL], TEMP, RET) :-
+    normalizeRow(ROW, NORMALIZED),
+    append(TEMP, [NORMALIZED], TEMP1),
+    normalizeRows(TAIL, TEMP1, RET).
+normalizeRows([], TEMP, TEMP).
+normalizeRow(ROW, RET) :-
+    TEMP=[],
+    normalizeRow(ROW, ROW, TEMP, RET).
+normalizeRow([HEAD|TAIL], ROW, TEMP, RET) :-
+    createTuple(HEAD, ELEMENT),
+    append(TEMP, [ELEMENT], TEMP1),
+    normalizeRow(TAIL, ROW, TEMP1, RET).
+normalizeRow([], _, TEMP, RET) :-
+    RET = TEMP,
+    true.
 
 % Create tuple from an 'item' (field)
 createTuple(ITEM, [NUMBER, PARITY, SOUTH, WEST]) :-
