@@ -45,3 +45,34 @@ countElements([], INDEX, INDEX).
 countElements([_|TAIL], COUNT, INDEX) :-
     NEXT is INDEX+1,
     countElements(TAIL, COUNT, NEXT).
+
+% Create Indexes
+getIndex(ROW, COL, R, C, RET) :-
+    TEMP=[],
+    getIndex(ROW, COL, R, C, 0, TEMP, RET).
+getIndex(ROW, COL, R, C, INDEX, TEMP, RET) :-
+    RC is R*C,
+    INDEX=:=RC ->
+        RET = TEMP,
+        true;
+    mod(COL, C, X),
+    X=:=0 ->
+        ROW1 is ROW+1,
+        COLPARAM is COL-C+1,
+        INDEX1 is INDEX+1,
+        append(TEMP, [[ROW, COL]], TEMP1),
+        getIndex(ROW1, COLPARAM, R, C, INDEX1, TEMP1, RET);
+    %else
+        COL1 is COL+1,
+        INDEX1 is INDEX+1,
+        append(TEMP, [[ROW, COL]], TEMP1),
+        getIndex(ROW, COL1, R, C, INDEX1, TEMP1, RET).
+
+% Modulo function
+mod(X, Y, RET) :-
+    X=:=0 ->
+        RET is 0;
+    X>0 ->
+        RET is X rem Y;
+    %else
+        RET is Y + X rem Y.
