@@ -19,7 +19,7 @@ ertekek(s(PARAM,MATRIX), R-C, RET) :-
     PARAM2 is PARAM*PARAM,
     normalizeInput(MATRIX, NORMALIZED),
 
-    createFullList(PARAM2, CANDIDATES),
+    createFullList(PARAM2, CANDIDATES).
 
 %    checkRow(NORMALIZED, R, ROWRESTRICTION),
 %    checkCol(NORMALIZED, C, COLRESTRICTION),
