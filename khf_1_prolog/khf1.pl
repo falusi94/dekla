@@ -46,7 +46,7 @@ countElements([_|TAIL], COUNT, INDEX) :-
     NEXT is INDEX+1,
     countElements(TAIL, COUNT, NEXT).
 
-% Create Indexes
+% Create R*C size index matrix
 getIndex(ROW, COL, R, C, RET) :-
     TEMP=[],
     getIndex(ROW, COL, R, C, 0, TEMP, RET).
@@ -67,6 +67,43 @@ getIndex(ROW, COL, R, C, INDEX, TEMP, RET) :-
         INDEX1 is INDEX+1,
         append(TEMP, [[ROW, COL]], TEMP1),
         getIndex(ROW, COL1, R, C, INDEX1, TEMP1, RET).
+
+% Create R*C size squares from MATRIX
+makeArrays(MATRIX, R, C, RET) :-
+    TEMP=[],
+    sizeOfMatrix(MATRIX, RMAX, CMAX),
+    makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP, 1, 1, RET).
+makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP, ROWK, COLK, RET):-
+    ROWKMAX is RMAX div R,
+    ROWK>ROWKMAX ->
+        RET=TEMP,
+        true;
+    COLK=:=C ->
+        ROWK1 is ROWK+1,
+        makeArraysHelper(ROWK, COLK, R, C, MATRIX, TEMP, TEMP1),
+        makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP1, ROWK1, 1, RET);
+    %else
+        COLK1 is COLK+1,
+        makeArraysHelper(ROWK, COLK, R, C, MATRIX, TEMP, TEMP1),
+        makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP1, ROWK, COLK1, RET).
+makeArraysHelper(ROWK, COLK, R, C, MATRIX, IN, RET) :-
+    ROWB is 1+(ROWK-1)*R,
+    COLB is 1+(COLK-1)*C,
+    getIndex(ROWB, COLB, R, C, INDEXMATRIX),
+    swapIndexesForElements(INDEXMATRIX, MATRIX, ELEMENTMATRIX),
+    append(IN, [ELEMENTMATRIX], RET).
+
+% Swap indexes to elements from MATRIX
+swapIndexesForElements(INDEXMATRIX, MATRIX, RET) :-
+    TEMP=[],
+    swapIndexesForElements(INDEXMATRIX, MATRIX, TEMP, RET).
+swapIndexesForElements([[ROW,COL]|TAIL], MATRIX, TEMP, RET) :-
+    getItem(MATRIX, ROW, COL, ELEMENT),
+    append(TEMP, [ELEMENT], TEMP1),
+    swapIndexesForElements(TAIL, MATRIX, TEMP1, RET).
+swapIndexesForElements([], _, TEMP, RET) :-
+    RET = TEMP,
+    true.
 
 % Modulo function
 mod(X, Y, RET) :-
