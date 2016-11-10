@@ -16,8 +16,26 @@
 %         mezőjében megengedett értékek listája.
 
 ertekek(s(PARAM,MATRIX), R-C, RET) :-
+    PARAM2 is PARAM*PARAM,
     normalizeInput(MATRIX, NORMALIZED),
-    makeArrays(NORMALIZED, PARAM, SQUARES).
+
+    createFullList(PARAM2, CANDIDATES),
+
+%    checkRow(NORMALIZED, R, ROWRESTRICTION),
+%    checkCol(NORMALIZED, C, COLRESTRICTION),
+%    checkSquare(NORMALIZED, R, C, SQUARERESTRICTION),
+%
+%    removeElements(CANDIDATES, ROWRESTRICTION, TEMP1),
+%    removeElements(TEMP1, COLRESTRICTION, TEMP2),
+%    removeElements(TEMP2, SQUARERESTRICTION, RET).
+
+% Remove elements from list
+removeElements(LIST, [], LIST).
+removeElements(LIST, [HEAD], RET) :-
+    delete(LIST, HEAD, RET).
+removeElements(LIST, [HEAD|TAIL], RET) :-
+    delete(LIST, HEAD, TEMP),
+    removeElements(TEMP, TAIL, RET).
 
 % Create list with every/even/odd number, from 1 to MAX
 createFullList(MAX, RET) :-
