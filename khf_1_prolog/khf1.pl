@@ -35,3 +35,13 @@ getItem([HEAD|TAIL], COL, RET) :-
         RET = HEAD;
     COL>0 ->
         getItem(TAIL, COL-1, RET).
+
+% Returns the column and row number of matrix
+sizeOfMatrix([HEAD|TAIL], ROWS, COLS) :-
+    countElements(HEAD, COLS, 0),
+    countElements(TAIL, ROWT, 0),
+    ROWS is ROWT+1.
+countElements([], INDEX, INDEX).
+countElements([_|TAIL], COUNT, INDEX) :-
+    NEXT is INDEX+1,
+    countElements(TAIL, COUNT, NEXT).
