@@ -18,6 +18,75 @@
 %ertekek(MATRIX, R-C, RET) :-
 %    .
 
+% Return an item from given matrix structure
+getItem([HEAD|TAIL], ROW, COL, RET) :-
+    ROW=:=1 ->
+        getItem(HEAD, COL-1, RET);
+    ROW>0 ->
+        getItem(TAIL, ROW-1, COL, RET).
+getItem([HEAD|TAIL], COL, RET) :-
+    COL=:=0 ->
+        RET = HEAD;
+    COL>0 ->
+        getItem(TAIL, COL-1, RET).
+
+% Create Indexes
+getIndex(ROW, COL, PARAM, RET) :-
+    TEMP=[],
+    getIndex(ROW, COL, PARAM, 0, TEMP, RET).
+getIndex(ROW, COL, PARAM, INDEX, TEMP, RET) :-
+    PARAM2 is PARAM*PARAM,
+    INDEX=:=PARAM2 ->
+        RET = TEMP,
+        true;
+    mod(COL, PARAM, X),
+    X=:=0 ->
+        ROW1 is ROW+1,
+        COLPARAM is COL-PARAM+1,
+        INDEX1 is INDEX+1,
+        append(TEMP, [[ROW, COL]], TEMP1),
+        getIndex(ROW1, COLPARAM, PARAM, INDEX1, TEMP1, RET);
+    %else
+        COL1 is COL+1,
+        INDEX1 is INDEX+1,
+        append(TEMP, [[ROW, COL]], TEMP1),
+        getIndex(ROW, COL1, PARAM, INDEX1, TEMP1, RET).
+
+% Swap indexes to elements from MATRIX
+swapIndexesForElements(INDEXMATRIX, MATRIX, RET) :-
+    TEMP=[],
+    swapIndexesForElements(INDEXMATRIX, MATRIX, TEMP, RET).
+swapIndexesForElements([[ROW,COL]|TAIL], MATRIX, TEMP, RET) :-
+    getItem(MATRIX, ROW, COL, ELEMENT),
+    append(TEMP, [ELEMENT], TEMP1),
+    swapIndexesForElements(TAIL, MATRIX, TEMP1, RET).
+swapIndexesForElements([], _, TEMP, RET) :-
+    RET = TEMP,
+    true.
+
+% Create PARAM*PARAM size squares from MATRIX
+makeArrays(MATRIX, PARAM, RET) :-
+    TEMP=[],
+    makeArrays(MATRIX, PARAM, TEMP, 1, 1, RET).
+makeArrays(MATRIX, PARAM, TEMP, ROWK, COLK, RET):-
+    ROWK>PARAM ->
+        RET=TEMP,
+        true;
+    COLK=:=PARAM ->
+        ROWK1 is ROWK+1,
+        makeArraysHelper(ROWK, COLK, PARAM, MATRIX, TEMP, TEMP1),
+        makeArrays(MATRIX, PARAM, TEMP1, ROWK1, 1, RET);
+    %else
+        COLK1 is COLK+1,
+        makeArraysHelper(ROWK, COLK, PARAM, MATRIX, TEMP, TEMP1),
+        makeArrays(MATRIX, PARAM, TEMP1, ROWK, COLK1, RET).
+makeArraysHelper(ROWK, COLK, PARAM, MATRIX, IN, RET) :-
+    ROWB is 1+(ROWK-1)*PARAM,
+    COLB is 1+(COLK-1)*PARAM,
+    getIndex(ROWB, COLB, PARAM, INDEXMATRIX),
+    swapIndexesForElements(INDEXMATRIX, MATRIX, ELEMENTMATRIX),
+    append(IN, [ELEMENTMATRIX], RET).
+
 % Change items to tuples {num, even/odd, south/west}
 normalizeInput(MATRIX, RET) :-
     TEMP=[],
@@ -81,3 +150,12 @@ getEvenOrOdd(ITEM, PARITY) :-
         PARITY=e;
     %else
         PARITY=u.
+
+% Modulo function
+mod(X, Y, RET) :-
+    X=:=0 ->
+        RET is 0;
+    X>0 ->
+        RET is X rem Y;
+    %else
+        RET is Y + X rem Y.
