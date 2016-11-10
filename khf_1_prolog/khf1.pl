@@ -75,36 +75,6 @@ getIndexHelper(ROW, COL, RMAX, CMAX, IN, OUT) :-
         OUT = IN;
     append(IN, [[ROW, COL]], OUT).
 
-% Create R*C size squares from MATRIX
-%makeArrays(MATRIX, R, C, RET) :-
-%    TEMP=[],
-%    sizeOfMatrix(MATRIX, RMAX, CMAX),
-%    %ROWKMAX is RMAX / R + 1,
-%    makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP, 1, 1, RET).
-%makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP, ROWK, COLK, RET):-
-%    ROWKMAX is RMAX div R + 1,
-%    print(a),
-%    ROWK>ROWKMAX ->
-%        print(a),
-%        RET=TEMP,
-%        true;
-%    (COLK=:=C ->
-%        print(b),
-%        ROWK1 is ROWK+1,
-%        makeArraysHelper(ROWK, COLK, R, C, RMAX, CMAX, MATRIX, TEMP, TEMP1),
-%        makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP1, ROWK1, 1, RET));
-%    %else
-%        COLK1 is COLK+1,
-%        print(c),
-%        makeArraysHelper(ROWK, COLK, R, C, RMAX, CMAX, MATRIX, TEMP, TEMP1),
-%        makeArrays(MATRIX, R, C, RMAX, CMAX, TEMP1, ROWK, COLK1, RET).
-%makeArraysHelper(ROWK, COLK, R, C, RMAX, CMAX, MATRIX, IN, RET) :-
-%    ROWB is 1+(ROWK-1)*R,
-%    COLB is 1+(COLK-1)*C,
-%    getIndex(ROWB, COLB, R, C, MATRIX, INDEXMATRIX),
-%    swapIndexesForElements(INDEXMATRIX, MATRIX, RMAX, CMAX, ELEMENTMATRIX),
-%    append(IN, [ELEMENTMATRIX], RET).
-
 % Create PARAM*PARAM size squares from MATRIX
 makeArrays(MATRIX, R, C, RET) :-
     TEMP=[],
