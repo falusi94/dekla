@@ -1,12 +1,38 @@
 % :- pred megoldase(sspec::in, ssol::in).
 % megoldase(+SSpec,+SSol) : sikeres, ha az SSol érték-mátrix megoldása az SSpec Sudoku-feladványnak.
 megoldase(s(PARAM, MATRIX), SOLUTION) :-
-    check(s(PARAM, MATRIX), SOLUTION), !.
-megoldase(_,_) :-
-    fail,!.
+    normalizeInput(MATRIX, NORMALIZED),
+    checkIntegrity(NORMALIZED, SOLUTION),!.
 
-check(s(PARAM, MATRIX), SOLUTION) :-
-    normalizeInput(MATRIX, NORMALIZED).
+% Check if every value in solution is meet the number and parity requirement from matrix
+checkIntegrity([ [ [NUMBER, PARITY, _, _] | TAIL1 ] |NORMTAIL], [[VALUE|TAIL2]|SOLTAIL]) :-
+    checkRowIntegrity([ [NUMBER, PARITY, _, _]|TAIL1], [VALUE|TAIL2]) ->
+        checkIntegrity(NORMTAIL, SOLTAIL);
+    %else
+        fail,!.
+checkIntegrity([],[]).
+
+% Check a row's integrity
+checkRowIntegrity([[NUMBER, PARITY, _, _]|TAIL1], [VALUE|TAIL2]) :-
+    checkParity(PARITY, VALUE)->
+        (checkNumber(NUMBER, VALUE) ->
+            checkRowIntegrity(TAIL1, TAIL2));
+    %else
+        false.
+checkRowIntegrity([],[]).
+
+% Returns true if value meet the number requirement
+checkNumber(NUMBER, VALUE) :-
+    or( (NUMBER=:= -1), NUMBER=:=VALUE).
+
+% Check VALUE meet the parity info
+checkParity(o, VALUE) :-
+    mod(VALUE, 2, RET),
+    RET=:=1.
+checkParity(e, VALUE) :-
+    mod(VALUE, 2, RET),
+    RET=:=0.
+checkParity(u, _).
 
 % Returns Rth row
 getRow(MATRIX, R, ROW) :-
@@ -185,3 +211,11 @@ mod(X, Y, RET) :-
         RET is X rem Y;
     %else
         RET is Y + X rem Y.
+
+% OR function
+or(A, B) :-
+    A ->
+        true;
+        B ->
+            true;
+        false.
