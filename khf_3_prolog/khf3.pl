@@ -86,21 +86,47 @@ getCol(MATRIX, ROW, COL, PARAM2, TEMP, RET) :-
         getCol(MATRIX, ROWNEXT, COL, PARAM2, TEMP1, RET).
 
 % Check if every value in solution is meet the number and parity requirement from matrix
-checkIntegrity([ [ [NUMBER, PARITY, _, _] | TAIL1 ] |NORMTAIL], [[VALUE|TAIL2]|SOLTAIL]) :-
-    checkRowIntegrity([ [NUMBER, PARITY, _, _]|TAIL1], [VALUE|TAIL2]) ->
-        checkIntegrity(NORMTAIL, SOLTAIL);
+checkIntegrity(NORMALIZED, SOLUTION) :-
+    checkIntegrity(NORMALIZED, SOLUTION, SOLUTION, 1).
+checkIntegrity([ [ [NUMBER, PARITY, SOUTH, WEST] | TAIL1 ] |NORMTAIL], [[VALUE|TAIL2]|SOLTAIL], SOLUTION, ROW) :-
+    checkRowIntegrity([ [NUMBER, PARITY, SOUTH, WEST]|TAIL1], [VALUE|TAIL2], SOLUTION, ROW) ->
+        ROW1 is ROW+1,
+        checkIntegrity(NORMTAIL, SOLTAIL, SOLUTION, ROW1);
     %else
         fail,!.
-checkIntegrity([],[]).
+checkIntegrity([],[], _, _).
 
 % Check a row's integrity
-checkRowIntegrity([[NUMBER, PARITY, _, _]|TAIL1], [VALUE|TAIL2]) :-
+checkRowIntegrity(NORMROW, SOLROW, SOLUTION, ROW) :-
+    checkRowIntegrity(NORMROW, SOLROW, SOLUTION, ROW, 1).
+checkRowIntegrity([[NUMBER, PARITY, SOUTH, WEST]|TAIL1], [VALUE|TAIL2], SOLUTION, ROW, COL) :-
     checkParity(PARITY, VALUE)->
         (checkNumber(NUMBER, VALUE) ->
-            checkRowIntegrity(TAIL1, TAIL2));
+            checkWest(NUMBER, WEST, ROW, COL, SOLUTION) ->
+                checkSouth(NUMBER, SOUTH, ROW, COL, SOLUTION) ->
+                    COL1 is COL+1,
+                    checkRowIntegrity(TAIL1, TAIL2, SOLUTION, ROW, COL1));
     %else
-        false.
-checkRowIntegrity([],[]).
+        false, !.
+checkRowIntegrity([],[], _, _, _).
+
+% Check if 'west' is true, the sum of number and the one on the left is odd
+checkWest(_, false, _, _, _).
+checkWest(NUMBER, true, ROW, COL, SOLUTION) :-
+    COL1 is COL-1,
+    getItem(SOLUTION, ROW, COL1, VALUE),
+    SUM is NUMBER+VALUE,
+    mod(SUM, 2, RET),
+    RET=:=1.
+
+% Check if 'south' is true, the sum of number and the one under it is odd
+checkSouth(_, false, _, _, _).
+checkSouth(NUMBER, true, ROW, COL, SOLUTION) :-
+    ROW1 is ROW+1,
+    getItem(SOLUTION, ROW1, COL, VALUE),
+    SUM is NUMBER+VALUE,
+    mod(SUM, 2, RET),
+    RET=:=1.
 
 % Returns true if value meet the number requirement
 checkNumber(NUMBER, VALUE) :-
