@@ -4,6 +4,20 @@ megoldase(s(PARAM, MATRIX), SOLUTION) :-
     normalizeInput(MATRIX, NORMALIZED),
     checkIntegrity(NORMALIZED, SOLUTION),!.
 
+
+% Check if every number from 1..PARAM*PARAM is in the list
+checkFullList(LIST, PARAM) :-
+    PARAM2 is PARAM*PARAM,
+    checkFullListHelper(LIST, PARAM2).
+checkFullListHelper(LIST, INDEX) :-
+    member(INDEX, LIST) ->
+        INDEX1 is INDEX-1,
+        checkFullListHelper(LIST, INDEX1);
+    INDEX<1 ->
+        true;
+    %else
+        fail, !.
+
 % Get rows from SOLUTION matrix
 getRows(LIST, PARAM, RET) :-
     PARAM2 is PARAM*PARAM,
