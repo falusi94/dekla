@@ -1,6 +1,6 @@
 % :- pred megoldase(sspec::in, ssol::in).
 % megoldase(+SSpec,+SSol) : sikeres, ha az SSol érték-mátrix megoldása az SSpec Sudoku-feladványnak.
-megoldase(s(PARAM2, MATRIX), SOLUTION) :-
+megoldase(s(PARAM, MATRIX), SOLUTION) :-
     normalizeInput(MATRIX, NORMALIZED),
     checkIntegrity(NORMALIZED, SOLUTION),!.
 
@@ -121,26 +121,26 @@ getItem([HEAD|TAIL], COL, RET) :-
         getItem(TAIL, COL-1, RET).
 
 % Create Indexes
-getIndex(ROW, COL, PARAM2, RET) :-
+getIndex(ROW, COL, PARAM, RET) :-
     TEMP=[],
-    getIndex(ROW, COL, PARAM2, 0, TEMP, RET).
-getIndex(ROW, COL, PARAM2, INDEX, TEMP, RET) :-
-    PARAM22 is PARAM2*PARAM2,
-    INDEX=:=PARAM22 ->
+    getIndex(ROW, COL, PARAM, 0, TEMP, RET).
+getIndex(ROW, COL, PARAM, INDEX, TEMP, RET) :-
+    PARAM2 is PARAM*PARAM,
+    INDEX=:=PARAM2 ->
         RET = TEMP,
         true;
-    mod(COL, PARAM2, X),
+    mod(COL, PARAM, X),
     X=:=0 ->
         ROW1 is ROW+1,
-        COLPARAM2 is COL-PARAM2+1,
+        COLPARAM is COL-PARAM+1,
         INDEX1 is INDEX+1,
         append(TEMP, [[ROW, COL]], TEMP1),
-        getIndex(ROW1, COLPARAM2, PARAM2, INDEX1, TEMP1, RET);
+        getIndex(ROW1, COLPARAM, PARAM, INDEX1, TEMP1, RET);
     %else
         COL1 is COL+1,
         INDEX1 is INDEX+1,
         append(TEMP, [[ROW, COL]], TEMP1),
-        getIndex(ROW, COL1, PARAM2, INDEX1, TEMP1, RET).
+        getIndex(ROW, COL1, PARAM, INDEX1, TEMP1, RET).
 
 % Swap indexes to elements from MATRIX
 swapIndexesForElements(INDEXMATRIX, MATRIX, RET) :-
@@ -154,26 +154,26 @@ swapIndexesForElements([], _, TEMP, RET) :-
     RET = TEMP,
     true.
 
-% Create PARAM2*PARAM2 size squares from MATRIX
-getArrays(MATRIX, PARAM2, RET) :-
+% Create PARAM*PARAM size squares from MATRIX
+getArrays(MATRIX, PARAM, RET) :-
     TEMP=[],
-    getArrays(MATRIX, PARAM2, TEMP, 1, 1, RET).
-getArrays(MATRIX, PARAM2, TEMP, ROWK, COLK, RET):-
-    ROWK>PARAM2 ->
+    getArrays(MATRIX, PARAM, TEMP, 1, 1, RET).
+getArrays(MATRIX, PARAM, TEMP, ROWK, COLK, RET):-
+    ROWK>PARAM ->
         RET=TEMP,
         true;
-    COLK=:=PARAM2 ->
+    COLK=:=PARAM ->
         ROWK1 is ROWK+1,
-        getArraysHelper(ROWK, COLK, PARAM2, MATRIX, TEMP, TEMP1),
-        getArrays(MATRIX, PARAM2, TEMP1, ROWK1, 1, RET);
+        getArraysHelper(ROWK, COLK, PARAM, MATRIX, TEMP, TEMP1),
+        getArrays(MATRIX, PARAM, TEMP1, ROWK1, 1, RET);
     %else
         COLK1 is COLK+1,
-        getArraysHelper(ROWK, COLK, PARAM2, MATRIX, TEMP, TEMP1),
-        getArrays(MATRIX, PARAM2, TEMP1, ROWK, COLK1, RET).
-getArraysHelper(ROWK, COLK, PARAM2, MATRIX, IN, RET) :-
-    ROWB is 1+(ROWK-1)*PARAM2,
-    COLB is 1+(COLK-1)*PARAM2,
-    getIndex(ROWB, COLB, PARAM2, INDEXMATRIX),
+        getArraysHelper(ROWK, COLK, PARAM, MATRIX, TEMP, TEMP1),
+        getArrays(MATRIX, PARAM, TEMP1, ROWK, COLK1, RET).
+getArraysHelper(ROWK, COLK, PARAM, MATRIX, IN, RET) :-
+    ROWB is 1+(ROWK-1)*PARAM,
+    COLB is 1+(COLK-1)*PARAM,
+    getIndex(ROWB, COLB, PARAM, INDEXMATRIX),
     swapIndexesForElements(INDEXMATRIX, MATRIX, ELEMENTMATRIX),
     append(IN, [ELEMENTMATRIX], RET).
 
