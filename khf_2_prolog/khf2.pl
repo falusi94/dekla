@@ -16,20 +16,46 @@
 %         mezőjében megengedett értékek listája.
 
 ertekek(s(PARAM,MATRIX), R-C, RET) :-
-    PARAM2 is PARAM*PARAM,
     normalizeInput(MATRIX, NORMALIZED),
 
+    PARAM2 is PARAM*PARAM,
+    normalizeInput(MATRIX, NORMALIZED),
     createFullList(PARAM2, CANDIDATES),
 
     checkRow(NORMALIZED, R, C, ROWRESTRICTION),
     checkCol(NORMALIZED, R, C, COLRESTRICTION),
-%    checkSquare(NORMALIZED, R, C, SQUARERESTRICTION),
+    checkSquare(NORMALIZED, R, C, PARAM, SQUARERESTRICTION),
     checkParity(NORMALIZED, R, C, PARAM, PARITYRESTRICTION),
-%
+    checkNumber(NORMALIZED, R, C, PARAM, NUMBERRESTRICTION),
+
     removeElements(CANDIDATES, ROWRESTRICTION, TEMP1),
     removeElements(TEMP1, COLRESTRICTION, TEMP2),
-    removeElements(TEMP2, [], TEMP3),
-    removeElements(TEMP3, PARITYRESTRICTION, RET).
+    removeElements(TEMP2, SQUARERESTRICTION, TEMP3),
+    removeElements(TEMP3, PARITYRESTRICTION, TEMP4),
+    removeElements(TEMP4, NUMBERRESTRICTION, RET),
+
+    !.
+
+% Gives back numbers restricted by value
+checkNumber(NORMALIZED, R, C, PARAM, NUMBERRESTRICTION) :-
+    getItem(NORMALIZED, R, C, [NUMBER| _]),
+    NUMBER > 0 ->
+        PARAM2 is PARAM*PARAM,
+        createFullList(PARAM2, FULL),
+        removeElements(FULL, [NUMBER], NUMBERRESTRICTION);
+    NUMBERRESTRICTION = [].
+
+% Gives back numbers restricted by square
+checkSquare(NORMALIZED, R, C, PARAM, SQUARERESTRICTION) :-
+    makeArrays(NORMALIZED, PARAM, SQUARES),
+    NTHSQUARE is ((R-1) div PARAM)*PARAM + (C-1) div PARAM + 1,
+    getNth(SQUARES, NTHSQUARE, SQUARE),
+    C1 is C-1,
+    mod(C1, PARAM, COL),
+    R1 is R-1,
+    mod(R1, PARAM, ROW),
+    NTH is ROW*PARAM+COL+1,
+    examine(SQUARE, NTH, SQUARERESTRICTION).
 
 % Gives back numbers restricted by parity
 checkParity(NORMALIZED, R, C, PARAM, PARITYRESTRICTION) :-
@@ -54,24 +80,22 @@ checkCol(MATRIX, R, C, RESTRICTED) :-
 
 % Returns Rth row
 getRow(MATRIX, R, ROW) :-
-    getElement(MATRIX, R, ROW).
+    getNth(MATRIX, R, ROW).
 
 % Returns Cth column
 getCol(MATRIX, C, COL) :-
     getCol(MATRIX, C, [], COL).
 getCol([ROW|TAIL], C, TEMP, COL) :-
-    getElement(ROW, C, ELEMENT),
+    getNth(ROW, C, ELEMENT),
     append(TEMP, [ELEMENT], TEMP1),
     getCol(TAIL, C, TEMP1, COL).
 getCol([], _, COL, COL).
 
 % Returns the NTH element from list
-getElement([HEAD|TAIL], NTH, RET) :-
-    NTH=:=1 ->
-        RET = HEAD;
-    %else
-        NEXT is NTH-1,
-        getElement(TAIL, NEXT, RET).
+getNth([HEAD|_], 1, HEAD).
+getNth([_|TAIL], NTH, RET) :-
+    NEXT is NTH-1,
+    getNth(TAIL, NEXT, RET).
 
 % Examine list
 examine(NORMALIZED, NTH, RESTRICTED) :-
@@ -93,10 +117,20 @@ examine([], _, RESTRICTED, RESTRICTED).
 % Remove elements from list
 removeElements(LIST, [], LIST).
 removeElements(LIST, [HEAD], RET) :-
-    delete(LIST, HEAD, RET).
+    deleteASD(LIST, HEAD, RET).
 removeElements(LIST, [HEAD|TAIL], RET) :-
-    delete(LIST, HEAD, TEMP),
+    deleteASD(LIST, HEAD, TEMP),
     removeElements(TEMP, TAIL, RET).
+
+deleteASD(LIST, KILL, RET) :-
+    deleteASD(LIST, KILL, [], RET).
+deleteASD([], _, TEMP, TEMP).
+deleteASD([HEAD|TAIL], KILL, TEMP, RET) :-
+    HEAD=:=KILL ->
+        deleteASD(TAIL, KILL, TEMP, RET);
+    %else
+        append(TEMP, [HEAD], TEMP1),
+        deleteASD(TAIL, KILL, TEMP1, RET).
 
 % Create list with every/even/odd number, from 1 to MAX
 createFullList(MAX, RET) :-
