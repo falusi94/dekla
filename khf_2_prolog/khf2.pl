@@ -24,10 +24,23 @@ ertekek(s(PARAM,MATRIX), R-C, RET) :-
     checkRow(NORMALIZED, R, C, ROWRESTRICTION),
     checkCol(NORMALIZED, R, C, COLRESTRICTION),
 %    checkSquare(NORMALIZED, R, C, SQUARERESTRICTION),
+    checkParity(NORMALIZED, R, C, PARAM, PARITYRESTRICTION),
 %
     removeElements(CANDIDATES, ROWRESTRICTION, TEMP1),
-    removeElements(TEMP1, COLRESTRICTION, RET).
-%    removeElements(TEMP2, SQUARERESTRICTION, RET).
+    removeElements(TEMP1, COLRESTRICTION, TEMP2),
+    removeElements(TEMP2, [], TEMP3),
+    removeElements(TEMP3, PARITYRESTRICTION, RET).
+
+% Gives back numbers restricted by parity
+checkParity(NORMALIZED, R, C, PARAM, PARITYRESTRICTION) :-
+    getItem(NORMALIZED, R, C, [_, e, _, _]) ->
+        PARAM2 is PARAM*PARAM,
+        createOddList(PARAM2, PARITYRESTRICTION);
+    getItem(NORMALIZED, R, C, [_, o, _, _]) ->
+        PARAM2 is PARAM*PARAM,
+        createEvenList(PARAM2, PARITYRESTRICTION);
+    %else
+        PARITYRESTRICTION=[].
 
 % Gives back numbers restricted by row
 checkRow(MATRIX, R, C, RESTRICTED) :-
