@@ -3,26 +3,30 @@
 megoldase(s(PARAM, MATRIX), SOLUTION) :-
     checkRows(SOLUTION, PARAM),
     checkCols(SOLUTION, PARAM),
+    checkSquares(SOLUTION, PARAM),
     normalizeInput(MATRIX, NORMALIZED),
     checkIntegrity(NORMALIZED, SOLUTION),
     !.
 
 % Check every row has all number from 1 to PARAM*PARAM
+checkSquares(MATRIX, PARAM) :-
+    makeArrays(MATRIX, PARAM, SQUARES),
+    checkHelper(SQUARES, PARAM).
+
+% Check every row has all number from 1 to PARAM*PARAM
 checkRows(MATRIX, PARAM) :-
-    checkRowsHelper(MATRIX, PARAM).
-checkRowsHelper([ROW|TAIL], PARAM) :-
-    checkFullList(ROW, PARAM) ->
-        checkRowsHelper(TAIL, PARAM).
-checkRowsHelper([], _).
+    checkHelper(MATRIX, PARAM).
 
 % Check every column has all number from 1 to PARAM*PARAM
 checkCols(MATRIX, PARAM) :-
     getCols(MATRIX, PARAM, COLS),
-    checkColsHelper(COLS, PARAM).
-checkColsHelper([COL|TAIL], PARAM) :-
-    checkFullList(COL, PARAM) ->
-        checkRowsHelper(TAIL, PARAM).
-checkColsHelper([], _).
+    checkHelper(COLS, PARAM).
+
+% Check helper, checkFullList on every list
+checkHelper([HEAD|TAIL], PARAM) :-
+    checkFullList(HEAD, PARAM) ->
+        checkHelper(TAIL, PARAM).
+checkHelper([], _).
 
 % Check if every number from 1..PARAM*PARAM is in the list
 checkFullList(LIST, PARAM) :-
@@ -36,6 +40,29 @@ checkFullListHelper(LIST, INDEX) :-
         true;
     %else
         fail, !.
+
+% Create PARAM*PARAM size squares from MATRIX
+makeArrays(MATRIX, PARAM, RET) :-
+    TEMP=[],
+    makeArrays(MATRIX, PARAM, TEMP, 1, 1, RET).
+makeArrays(MATRIX, PARAM, TEMP, ROWK, COLK, RET):-
+    ROWK>PARAM ->
+        RET=TEMP,
+        true;
+    COLK=:=PARAM ->
+        ROWK1 is ROWK+1,
+        makeArraysHelper(ROWK, COLK, PARAM, MATRIX, TEMP, TEMP1),
+        makeArrays(MATRIX, PARAM, TEMP1, ROWK1, 1, RET);
+    %else
+        COLK1 is COLK+1,
+        makeArraysHelper(ROWK, COLK, PARAM, MATRIX, TEMP, TEMP1),
+        makeArrays(MATRIX, PARAM, TEMP1, ROWK, COLK1, RET).
+makeArraysHelper(ROWK, COLK, PARAM, MATRIX, IN, RET) :-
+    ROWB is 1+(ROWK-1)*PARAM,
+    COLB is 1+(COLK-1)*PARAM,
+    getIndex(ROWB, COLB, PARAM, INDEXMATRIX),
+    swapIndexesForElements(INDEXMATRIX, MATRIX, ELEMENTMATRIX),
+    append(IN, [ELEMENTMATRIX], RET).
 
 % Get columns from SOLUTION matrix
 getCols(MATRIX, PARAM, RET) :-
