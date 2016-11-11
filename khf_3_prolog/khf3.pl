@@ -1,9 +1,28 @@
 % :- pred megoldase(sspec::in, ssol::in).
 % megoldase(+SSpec,+SSol) : sikeres, ha az SSol érték-mátrix megoldása az SSpec Sudoku-feladványnak.
 megoldase(s(PARAM, MATRIX), SOLUTION) :-
+    checkRows(SOLUTION, PARAM),
+    checkCols(SOLUTION, PARAM),
     normalizeInput(MATRIX, NORMALIZED),
-    checkIntegrity(NORMALIZED, SOLUTION),!.
+    checkIntegrity(NORMALIZED, SOLUTION),
+    !.
 
+% Check every row has all number from 1 to PARAM*PARAM
+checkRows(MATRIX, PARAM) :-
+    checkRowsHelper(MATRIX, PARAM).
+checkRowsHelper([ROW|TAIL], PARAM) :-
+    checkFullList(ROW, PARAM) ->
+        checkRowsHelper(TAIL, PARAM).
+checkRowsHelper([], _).
+
+% Check every column has all number from 1 to PARAM*PARAM
+checkCols(MATRIX, PARAM) :-
+    getCols(MATRIX, PARAM, COLS),
+    checkColsHelper(COLS, PARAM).
+checkColsHelper([COL|TAIL], PARAM) :-
+    checkFullList(COL, PARAM) ->
+        checkRowsHelper(TAIL, PARAM).
+checkColsHelper([], _).
 
 % Check if every number from 1..PARAM*PARAM is in the list
 checkFullList(LIST, PARAM) :-
@@ -17,23 +36,6 @@ checkFullListHelper(LIST, INDEX) :-
         true;
     %else
         fail, !.
-
-% Get rows from SOLUTION matrix
-getRows(LIST, PARAM, RET) :-
-    PARAM2 is PARAM*PARAM,
-    getRows(LIST, PARAM2, 1, [], [], RET).
-getRows([HEAD|TAIL], PARAM2, INDEX, TEMP, ASD, RET) :-
-    PARAM2 =:= INDEX ->
-        append(TEMP, [HEAD], LIST),
-        append(ASD, [LIST], RET1),
-        getRows(TAIL, PARAM2, 1, [], RET1, RET);
-    %else
-        append(TEMP, [HEAD], LIST),
-        INDEX1 is INDEX + 1,
-        getRows(TAIL, PARAM2, INDEX1, LIST, ASD, RET).
-getRows([HEAD], _, _, TEMP, ASD, RET) :-
-    append(TEMP, [HEAD], TEMP1),
-    append(ASD, TEMP1, RET).
 
 % Get columns from SOLUTION matrix
 getCols(MATRIX, PARAM, RET) :-
