@@ -304,7 +304,10 @@ isWest(ITEM, WEST) :-
 % Gives back proper parity, if given, else return u (unknown)
 getEvenOrOdd(ITEM, PARITY) :-
     member(o, ITEM) ->
-        PARITY=o;
+        (member(e, ITEM) ->
+            false, !;
+        %else
+            PARITY=o);
     member(e, ITEM) ->
         PARITY=e;
     %else
